@@ -4,52 +4,50 @@ from person import Person
 conn = sqlite3.connect('movies.db')
 c = conn.cursor()
 c.execute("PRAGMA foreign_keys = 1")
-# c.execute("""CREATE TABLE movie(
-#            movie_id integer primary key,
-#            title text,
-#            genre text,
-#            year integer,
-#            rating real,
-#            unique(movie_id)
-#
-#            )""")
-#
-# c.execute("""CREATE TABLE person(
-#            person_id integer primary key,
-#            movie_id integer,
-#            first_name text,
-#            last_name text,
-#            role text,
-#            foreign key(movie_id) REFERENCES movie(movie_id),
-#            unique(person_id)
-#            )""")
-#
-# c.execute("""CREATE TABLE award(
-#            award_name text primary key,
-#            award_weight integer,
-#            person_id integer,
-#            foreign key(person_id) REFERENCES person(person_id),
-#            unique(award_name)
-#            )""")
-#
-# c.execute("""CREATE TABLE rating(
-#            rating_id integer primary key,
-#            movie_id integer,
-#            person_id integer,
-#            rate real,
-#            foreign key(movie_id) REFERENCES movie(movie_id),
-#            foreign key(person_id) REFERENCES person(person_id),
-#            unique(rating_id)
-#            )""")
-# c.execute("""CREATE TABLE cast(
-#            cast_id integer primary key,
-#            movie_id integer,
-#            person_id integer,
-#            if_actor boolean,
-#            foreign key(movie_id) REFERENCES movie(movie_id),
-#            foreign key(person_id) REFERENCES person(person_id),
-#            unique(cast_id)
-#            )""")
+c.execute("""CREATE TABLE movie(
+           movie_id integer primary key,
+           title text,
+           genre text,
+           year integer,
+           rating real,
+           unique(movie_id)
+
+           )""")
+
+c.execute("""CREATE TABLE person(
+           person_id integer primary key,
+           first_name text,
+           last_name text,
+           role text,
+           unique(person_id)
+           )""")
+
+c.execute("""CREATE TABLE award(
+           award_name text primary key,
+           award_weight integer,
+           person_id integer,
+           foreign key(person_id) REFERENCES person(person_id),
+           unique(award_name)
+           )""")
+
+c.execute("""CREATE TABLE rating(
+           rating_id integer primary key,
+           movie_id integer,
+           person_id integer,
+           rate real,
+           foreign key(movie_id) REFERENCES movie(movie_id),
+           foreign key(person_id) REFERENCES person(person_id),
+           unique(rating_id)
+           )""")
+c.execute("""CREATE TABLE cast(
+           cast_id integer primary key,
+           movie_id integer,
+           person_id integer,
+           if_actor boolean,
+           foreign key(movie_id) REFERENCES movie(movie_id),
+           foreign key(person_id) REFERENCES person(person_id),
+           unique(cast_id)
+           )""")
 # title = input("Title: ")
 # genre = input("Genre: ")
 # year = input("Year: ")
