@@ -1,0 +1,28 @@
+ToDo:
+Wszystkie opcje dostêpne z menu
+GUI ----> *****http://zetcode.com/gui/tkinter/  --- tutorial*****
+
+
+
+
+Logowanie/tworzenie konta
+	->tworzenie konta tylko dla zwyk³ych u¿ytkowników (admin dodaje dane w kodzie)
+	->jako admin i jako zwyk³y u¿ytkownik (osobne s³owniki z danymi do logowania, wczytywane z pliku) //wstêpne metody zrobione, bez obs³ugi plików i logowania admina
+ |
+ |
+\ /
+Menu:
+Przegl¹daj filmy
+	(LISTA FILMÓW)
+	->Wyœwietla info o filmie
+	->Oceñ film (tylko krytyk)
+
+
+Dodaj film(tylko admin)
+	->Formularz dodawania
+
+Ustawienia
+	->Przydziel krytyka
+	->Edytuj informacje o filmie(w tym usuñ)	
+Autorzy
+	->jakieœ info etc.
