@@ -4,6 +4,5 @@ class Movie:
         # super(movie, self).__init__()
         self.movie_id = movie_id
         self.title = title
-        self.genre = genre
+        self.genre = genre  
         self.year = year
-    
