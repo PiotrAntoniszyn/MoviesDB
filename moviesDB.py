@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from time import sleep
 from movie import Movie
 from person import Person
 from award import Award
@@ -195,18 +196,28 @@ def Edit_movie(check):
         genre = input("Podaj nowy gatunek: ")
         c.execute("UPDATE movie SET genre =? WHERE movie_id=? ",(genre,Id_filmu,))
         print("Zrobione")
+        sleep(1)
+        os.system('cls')
+        menu(check)
     elif ans=="2":
         Year = input("Podaj nowy rok: ")
         c.execute("UPDATE movie SET Year =? WHERE movie_id=? ",(Year,Id_filmu,))
         print("Zrobione")
+        sleep(1)
+        os.system('cls')
+        menu(check)
     elif ans=="3":
         title = input("Podaj nowy tytul: ")
         c.execute("UPDATE movie SET Title =? WHERE movie_id=? ",(title,Id_filmu,))
         print("Zrobione")
+        sleep(1)
+        os.system('cls')
         menu(check)
     elif ans=="4":
         c.execute("DELETE FROM movie WHERE movie_id=? ",(Id_filmu))
         print("Zrobione")
+        sleep(1)
+        os.system('cls')
         menu(check)
     elif ans=="5":
         os.system('cls')
@@ -214,7 +225,7 @@ def Edit_movie(check):
     elif ans !="":
         print("\nBrak takiej opcji, powrot do menu glownego")
 
-def movie_sort():
+def movie_sort(check):
     c.execute("SELECT movie.movie_id, movie.title, rating.rate FROM movie INNER JOIN rating ON movie.movie_id = rating.movie_id ORDER BY rating.rate")
     rows = c.fetchall()
     for row in rows:
@@ -237,15 +248,18 @@ def movie_rate(user):
         c.execute("INSERT INTO rating VALUES(:rate_id,:movie_id,:rate,:userName)" , {'rate_id':x.rate_id,'movie_id': x.movie_id, 'rate':float(x.rate),
         'userName':x.userName})
         print("Film Oceniony")
+        sleep(1)
+        os.system('cls')
+        menu(user)
 
-
-def browseMovies():
+def browseMovies(check):
     print ("""
     1. Przegladaj wszystkie
     2. Przegladaj pod katem gatunku
     3. Przegladaj pod katem roku
     4. Znajdz film
     5. Ranking wg ocen
+    6. Powrot do menu
     """)
     ans=input("Co chcesz zrobic")
     if ans=="1":
@@ -267,23 +281,29 @@ def browseMovies():
             rows = c.fetchall()
             for row in rows:
                 print(row)
+            menu(check)
         elif genreSort=="2":
             c.execute("SELECT * FROM movie WHERE genre LIKE 'dramat'")
             rows = c.fetchall()
             for row in rows:
                 print(row)
+            menu(check)
         elif genreSort=="3":
             c.execute("SELECT * FROM movie WHERE genre LIKE 'sensacja'")
             rows = c.fetchall()
             for row in rows:
                 print(row)
+            menu(check)
         elif genreSort=="4":
             c.execute("SELECT * FROM movie WHERE genre LIKE 'fantasy'")
             rows = c.fetchall()
             for row in rows:
                 print(row)
+            menu(check)
         elif ans !="":
-          print("\n Not Valid Choice Try again")
+          print("\nBrak takiej opcji, powrot do menu")
+          os.system('cls')
+          menu(check)
 
     elif ans=="3":
         uYear = input("Podaj rok: ")
@@ -291,23 +311,28 @@ def browseMovies():
         rows = c.fetchall()
         for row in rows:
             print(row)
+        menu(check)
     elif ans=="4":
         uTitle = input("Podaj tytul filmu: ")
         c.execute("SELECT * FROM movie WHERE title=?",(uTitle,))
         rows = c.fetchall()
         for row in rows:
             print(row)
+        menu(check)
     elif ans=="5":
         movie_sort()
     elif ans !="":
         print("\n Not Valid Choice Try again")
-def Create_new_person():
+def Create_new_person(check):
      first_name = input("First name: ")
      last_name = input("Last name: ")
      role = input("Role: ")
      x = Person(None,first_name,last_name,role) #tworzenie obiektu klasy movie
      c.execute("INSERT INTO person VALUES(:person_id,:first_name,:last_name,:role)" , {'person_id': x.person_id, 'first_name':x.first_name, 'last_name': x.last_name, 'role':x.role})
+     menu(check)
 
+
+     
 check=logIn()
 menu(check)
 conn.commit()
