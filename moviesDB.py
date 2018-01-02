@@ -5,7 +5,7 @@ from movie import Movie
 from person import Person
 from award import Award
 from cast import Cast
-from ratin import Rating
+from rating import Rating
 conn = sqlite3.connect('movies.db')
 c = conn.cursor()
 c.execute("PRAGMA foreign_keys = 1")
@@ -133,9 +133,11 @@ def menu():
         """)
         ans=input("Co Chcesz zrobic")
         if ans=="1":
-            print("\n Student Added")
+            print("\n BAZA FILMOW")
+            browseMovies()
         elif ans=="2":
-            print("\n Student Deleted")
+            print("\n OCENA FILMU")
+            movie_rate(checkIfAdmin)
         elif ans !="":
             print("\n Not Valid Choice Try again")
 
@@ -207,6 +209,31 @@ def Edit_movie():
     elif ans !="":
         print("\n Not Valid Choice Try again")
 
+def movie_sort():
+    c.execute("SELECT * FROM movie ORDER BY (SELECT AVG (rate) FROM rating GROUP BY movie_id)")
+    rows = c.fetchall()
+    for row in rows:
+        print(row)
+
+def movie_rate(user):
+    movie_idX = input('Podaj ID filmu: ')
+    rate = int(input("Podaj ocene (1-10): "))
+    if(rate<1 or rate>10):
+        print("Ocena ma byc od 1 do 10")
+        rate = int(input("Podaj ocene (1-10): "))
+    inBase=False
+    x = Rating(None,movie_idX,rate,user)   #tworzenie obiektu klasy rating
+    c.execute("SELECT movie_id, userName FROM rating")
+    for userName, movie_id in c:
+        print("Dupa")
+        if(user == userName and movie_idX==movie_id):
+            print("Film juz oceniony")
+            inBase=True
+    if(inBase==False):
+        c.execute("INSERT INTO rating VALUES(:rate_id,:movie_id,:rate,:userName)" , {'rate_id':x.rate_id,'movie_id': x.movie_id, 'rate':float(x.rate),
+        'userName':x.userName})
+        print("Film Oceniony")
+
 
 def browseMovies():
     print ("""
@@ -214,6 +241,7 @@ def browseMovies():
     2. Przegladaj pod katem gatunku
     3. Przegladaj pod katem roku
     4. Znajdz film
+    5. Ranking wg ocen
     """)
     ans=input("Co Chcesz zrobic")
     if ans=="1":
@@ -265,8 +293,8 @@ def browseMovies():
         rows = c.fetchall()
         for row in rows:
             print(row)
-
-        print("\n Goodbye")
+    elif ans=="5":
+        movie_sort()
     elif ans !="":
         print("\n Not Valid Choice Try again")
 def Create_new_person():
