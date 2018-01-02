@@ -111,7 +111,7 @@ def menu():
         3.Edytuj Film.
         4.Edytuj Uzytkownika
         """)
-        ans=input("Co Chcesz zrobi")
+        ans=input("Co chcesz zrobic")
         if ans=="1":
             print("\n BAZA FILMOW")
             browseMovies()
@@ -121,52 +121,39 @@ def menu():
         elif ans=="3":
             print("\n EDYCJA FILMOW")
             Edit_movie()
-        elif ans=="4":
-            print("\n EDYCJA UZYTKOWNIKA")
-
         else:
-            print("\n Not Valid Choice Try again")
+            print("\n Brak takiej opcji")
     else:
         print ("""
         1.Wyswietl Baze Filmow.
         2.Ocen film.
+        3.Powrot do menu.
         """)
-        ans=input("Co Chcesz zrobic")
+        ans=input("Co chcesz zrobic")
         if ans=="1":
             print("\n BAZA FILMOW")
             browseMovies()
         elif ans=="2":
             print("\n OCENA FILMU")
             movie_rate(checkIfAdmin)
+        elif ans=="3":
+            menu(checkIfAdmin)
         elif ans !="":
-            print("\n Not Valid Choice Try again")
+            print("\n Brak takiej opcji, powrot do menu")
+            menu(checkIfAdmin)
 
 def Create_new_movie():
-    title = input("Title: ")
-    genre = input("Genre: ")
-    year = input("Year: ")
+    title = input("Tytul: ")
+    genre = input("Gatunek: ")
+    year = input("Rok: ")
     x = Movie(None,title,genre,year)   #tworzenie obiektu klasy movie
-    c.execute("INSERT INTO movie VALUES(:movie_id,:title,:genre,:year,null)" , {'movie_id': x.movie_id, 'title':x.title,
+    c.execute("INSERT INTO movie VALUES(:movie_id,:title,:genre,:year)" , {'movie_id': x.movie_id, 'title':x.title,
     'genre': x.genre, 'year':x.year})
-    # directorName = input("Imie rezysera: ")
-    # directorSurname = input("Nazwisko rezysera: ")
-    # c.execute("SELECT first_name,last_name FROM person")
-    # inBase=False
-    # d=None
-    # for first_name, last_name in c:
-    #     if(directorName ==first_name and directorSurname==last_name):
-    #         c.execute("INSERT INTO cast (cast_id,movie_id,person_id,if_actor) VALUES(:cast_id,:movie_id,(SELECT person_id FROM person WHERE first_name = directorName AND last_name = directorSurname ),0)" , {'cast_id': d,'movie_id': x.movie_id})
-    #         inBase = True
-    # if (inBase == False):
-    #     p = Person(None,directorName,directorSurname,'Rezyser') #tworzenie obiektu klasy movie
-    #     c.execute("INSERT INTO person VALUES(:person_id,:first_name,:last_name,:role)" ,
-    #     {'person_id': p.person_id, 'first_name':p.first_name, 'last_name': p.last_name, 'role':p.role})
-    #     c.execute("INSERT INTO cast (cast_id,movie_id,person_id,if_actor) VALUES(:cast_id,:movie_id,(SELECT person_id FROM person WHERE first_name =:directorName AND last_name =:directorSurname),0)" , {'cast_id': d,'movie_id': x.movie_id,'directorName':directorName,'directorSurname':directorSurname})
-    #
+
 def Create_new_cast():
-    movie_id = input("Movie_Id: ")
-    person_id = input("Person_Id: ")
-    if_actor = input("If_Actor: ")
+    movie_id = input("Id filmu: ")
+    person_id = input("Id osoby: ")
+    if_actor = input("aktor wpisz 1, rezyser wpisz 0: ")
     x = Cast(None,movie_id,person_id,if_actor)   #tworzenie obiektu klasy movie
     c.execute("INSERT INTO cast VALUES(:cast_id,:movie_id,:person_id,:if_actor)" , {'cast_id': x.cast_id, 'movie_id': x.movie_id, 'person_id':x.person_id,
      'if_actor':x.if_actor})
@@ -183,6 +170,7 @@ def Create_new_award():
         except sqlite3.IntegrityError:
             print ("Nie ma takiej osoby, sprobuj ponownie")
             Create_new_award()
+
 def Edit_movie():
     Id_filmu = input("Podaj Id_filmu: ")
     print ("""
@@ -243,7 +231,7 @@ def browseMovies():
     4. Znajdz film
     5. Ranking wg ocen
     """)
-    ans=input("Co Chcesz zrobic")
+    ans=input("Co chcesz zrobic")
     if ans=="1":
         c.execute("SELECT * FROM movie")
         rows = c.fetchall()
@@ -255,7 +243,7 @@ def browseMovies():
         1. Komedia
         2. Dramat
         3. Sensacja
-        4. Bajka
+        4. Fantasy
         """)
         genreSort = input("Jaki gatunek wyswietlic?")
         if genreSort=="1":
