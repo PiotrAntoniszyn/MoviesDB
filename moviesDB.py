@@ -5,6 +5,7 @@ from movie import Movie
 from person import Person
 from award import Award
 from cast import Cast
+from ratin import Rating
 conn = sqlite3.connect('movies.db')
 c = conn.cursor()
 c.execute("PRAGMA foreign_keys = 1")
