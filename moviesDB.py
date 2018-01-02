@@ -1,4 +1,6 @@
 import sqlite3
+import pickle
+import hashlib
 from movie import Movie
 from person import Person
 from award import Award
@@ -6,41 +8,135 @@ from cast import Cast
 conn = sqlite3.connect('movies.db')
 c = conn.cursor()
 c.execute("PRAGMA foreign_keys = 1")
+
 #Metoda odpowiedzialna za proces logowania
 
-
-def logOn():
-    ifAdmin = raw_input('Czy logowanie jako administrator? Y/N')
-    #if (ifAdmin == 'y' or  ifAdmin == 'Y'):
-
+# def save_obj(name, obj ):
+#     with open('obj/'+ name + '.pkl', 'wb+') as f:
+#         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+#
+# def load_obj(name ):
+#     with open('obj/' + name + '.pkl', 'rb') as f:
+#         return pickle.load(f)
+#
+# def logOn():
+#     ifAdmin = input('Czy logowanie jako administrator? Y/N')
+#     #if (ifAdmin == 'y' or  ifAdmin == 'Y'):
+#
+#     userLogin = input('Podaj login: ')
+#     userPass = input('Podaj hasło: ')
+#     if (userLogin not in logData.keys() or userPass not in logData.values()):
+#         print('Błędny login lub hasło, spróbuj ponownie.')
+#         logOn()
+#     for key in logData:
+#         if (userLogin == key and userPass == logData[key]):
+#             print('Zalogowano. Witaj ' + str(userLogin))
+#
+#
+# #Tworzenie nowego użytkownika
+#
+# def createUser():
+#     userLogin = input('Podaj login: ')
+#     userPass = input('Podaj hasło: ')
+#     userRepeat = input('Powtórz hasło: ')
+#     if(userLogin in logData.keys()):
+#         print('Podany login jest już zajęty, podaj inny login')
+#         createUser()
+#     elif(userPass!=userRepeat):
+#         print('Podane hasła nie są identyczne, spróbuj ponownie')
+#         createUser()
+#     else:
+#         print('Pomyślnie utworzono konto! Witaj w klubie, '+ userLogin + '!')
+#         logData.update({userLogin:userPass})
+#         #
+#         #dodać część odpowiedzialną za aktualizację pliku z danymi użytkowników
+#         #
+def loginPrompt():
     userLogin = input('Podaj login: ')
-    userPass = input('Podaj hasło: ')
-    if (userLogin not in logData.keys() or userPass not in logData.values()):
-        print('Błędny login lub hasło, spróbuj ponownie.')
-        logOn()
-    for key in logData:
-        if (userLogin == key and userPass == logData[key]):
-            print('Zalogowano. Witaj ' + str(userLogin))
+    userPass = (input('Podaj haslo: '))
+    return (userLogin,userPass)
 
+def logIn():
+    sqlCreateTableQuery = 'CREATE TABLE IF NOT EXISTS Users (ID INTEGER PRIMARY KEY AUTOINCREMENT, Username TEXT, Password TEXT, IfAdmin BOOLEAN)'
+    print("database created")
+    c.execute(sqlCreateTableQuery)
+
+
+    userCredentials = loginPrompt()
+
+    sqlFindUserQuery  ="SELECT Username,Password,IfAdmin from Users WHERE Username LIKE '{login}'".format(login = userCredentials[0])
+
+    c.execute(sqlFindUserQuery)
+    queryResult = c.fetchall()
+
+
+    if len(queryResult)==0:
+        createUser(userCredentials[0],userCredentials[1])
+        print("Utworzono konto")
+        logIn()
+
+    elif len(queryResult)==1:
+        login_success = False
+        while login_success ==  False:
+            #moze sie wydawac niepotrzebne, ale jesli tam nizej przy blednym loginie/hasle zmieni sie nie tylko haslo, ale tez login, to bez tego ni pojdzie (chyba xD)
+            sqlFindUserQuery = "SELECT Username,Password,IfAdmin from Users WHERE Username LIKE '{login}'".format(login=userCredentials[0])
+            c.execute(sqlFindUserQuery)
+            if userCredentials[1] == c.fetchone()[1]:
+                print('Zalogowano. Witaj {user}'.format(user=userCredentials[0]))
+
+                return userCredentials[0]
+
+            else:
+                print('Bledny login lub haslo, sprobuj ponownie.')
+                userCredentials = loginPrompt()
 
 #Tworzenie nowego użytkownika
 
-def createUser():
-    userLogin = input('Podaj login: ')
-    userPass = input('Podaj hasło: ')
-    userRepeat = input('Powtórz hasło: ')
-    if(userLogin in logData.keys()):
-        print('Podany login jest już zajęty, podaj inny login')
-        createUser()
-    elif(userPass!=userRepeat):
-        print('Podane hasła nie są identyczne, spróbuj ponownie')
-        createUser()
+def createUser(userLogin, userPassword):
+    sqlAddUserQuery = "INSERT INTO Users (Username, Password, IfAdmin) VALUES ('{login}','{password}','{admin}')".format(
+        login=userLogin,
+        password=userPassword,
+        admin=False)
+    c.execute(sqlAddUserQuery)
+
+def menu():
+    checkIfAdmin =logIn()
+    c.execute("SELECT IfAdmin from Users WHERE Username LIKE '{login}'".format(login=checkIfAdmin))
+    d=c.fetchone()[0]
+    if(d=='True'):
+        print ("""
+        1.Wyswietl Baze Filmow.
+        2.Dodaj Film.
+        3.Edytuj Film.
+        4.Edytuj Uzytkownika
+        """)
+        ans=input("Co Chcesz zrobi")
+        if ans=="1":
+            print("\n BAZA FILMOW")
+            browseMovies()
+        elif ans=="2":
+            print("\n DODAWANIE FILMOW")
+            Create_new_movie()
+        elif ans=="3":
+            print("\n EDYCJA FILMOW")
+            Edit_movie()
+        elif ans=="4":
+            print("\n EDYCJA UZYTKOWNIKA")
+
+        else:
+            print("\n Not Valid Choice Try again")
     else:
-        print('Pomyślnie utworzono konto! Witaj w klubie, '+ userLogin + '!')
-        logData.update({userLogin:userPass})
-        #
-        #dodać część odpowiedzialną za aktualizację pliku z danymi użytkowników
-        #
+        print ("""
+        1.Wyswietl Baze Filmow.
+        2.Ocen film.
+        """)
+        ans=input("Co Chcesz zrobic")
+        if ans=="1":
+            print("\n Student Added")
+        elif ans=="2":
+            print("\n Student Deleted")
+        elif ans !="":
+            print("\n Not Valid Choice Try again")
 
 def Create_new_movie():
     title = input("Title: ")
@@ -179,7 +275,8 @@ def Create_new_person():
      x = Person(None,first_name,last_name,role) #tworzenie obiektu klasy movie
      c.execute("INSERT INTO person VALUES(:person_id,:first_name,:last_name,:role)" , {'person_id': x.person_id, 'first_name':x.first_name, 'last_name': x.last_name, 'role':x.role})
 
-Edit_movie()
+
+menu()
 conn.commit()
 
 conn.close()
