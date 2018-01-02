@@ -1,6 +1,5 @@
 import sqlite3
-import pickle
-import hashlib
+import os
 from movie import Movie
 from person import Person
 from award import Award
@@ -76,17 +75,20 @@ def logIn():
         print("Utworzono konto")
         logIn()
 
+
     elif len(queryResult)==1:
         login_success = False
         while login_success ==  False:
             #moze sie wydawac niepotrzebne, ale jesli tam nizej przy blednym loginie/hasle zmieni sie nie tylko haslo, ale tez login, to bez tego ni pojdzie (chyba xD)
             sqlFindUserQuery = "SELECT Username,Password,IfAdmin from Users WHERE Username LIKE '{login}'".format(login=userCredentials[0])
             c.execute(sqlFindUserQuery)
+
             if userCredentials[1] == c.fetchone()[1]:
-                print('Zalogowano. Witaj {user}'.format(user=userCredentials[0]))
+                try:
 
+                    print('Zalogowano. Witaj {user}'.format(user=userCredentials[0]))
+                except TypeError: pass
                 return userCredentials[0]
-
             else:
                 print('Bledny login lub haslo, sprobuj ponownie.')
                 userCredentials = loginPrompt()
@@ -100,28 +102,29 @@ def createUser(userLogin, userPassword):
         admin=False)
     c.execute(sqlAddUserQuery)
 
-def menu():
-    checkIfAdmin =logIn()
+def menu(check):
+    checkIfAdmin = check
     c.execute("SELECT IfAdmin from Users WHERE Username LIKE '{login}'".format(login=checkIfAdmin))
     d=c.fetchone()[0]
     if(d=='True'):
-        print ("""
+        print ("""Menu
         1.Wyswietl Baze Filmow.
         2.Dodaj Film.
         3.Edytuj Film.
-        4.Edytuj Uzytkownika
+        4.Usun Uzytkownika
         """)
-        ans=input("Co chcesz zrobic")
+        ans=input("Co chcesz zrobic? ")
         if ans=="1":
             print("\n BAZA FILMOW")
-            browseMovies()
+            browseMovies(checkIfAdmin)
         elif ans=="2":
             print("\n DODAWANIE FILMOW")
-            Create_new_movie()
+            Create_new_movie(checkIfAdmin)
         elif ans=="3":
             print("\n EDYCJA FILMOW")
-            Edit_movie()
-        else:
+            Edit_movie(checkIfAdmin)
+        elif ans=="4":
+            userDelete(checkIfAdmin)
             print("\n Brak takiej opcji")
     else:
         print ("""
@@ -132,7 +135,7 @@ def menu():
         ans=input("Co chcesz zrobic")
         if ans=="1":
             print("\n BAZA FILMOW")
-            browseMovies()
+            browseMovies(checkIfAdmin)
         elif ans=="2":
             print("\n OCENA FILMU")
             movie_rate(checkIfAdmin)
@@ -142,23 +145,30 @@ def menu():
             print("\n Brak takiej opcji, powrot do menu")
             menu(checkIfAdmin)
 
-def Create_new_movie():
+def userDelete(check):
+    user = input("podaj login uzytkownika do usuniecia: ")
+    c.execute("DELETE FROM Users WHERE Username LIKE '{user}'".format(user=user))
+    c.execute("DELETE FROM rating WHERE userName LIKE '{user}'".format(user=user))
+    print("Usunieto")
+    os.system('cls')
+    menu(check)
+def Create_new_movie(check):
     title = input("Tytul: ")
     genre = input("Gatunek: ")
     year = input("Rok: ")
     x = Movie(None,title,genre,year)   #tworzenie obiektu klasy movie
     c.execute("INSERT INTO movie VALUES(:movie_id,:title,:genre,:year)" , {'movie_id': x.movie_id, 'title':x.title,
     'genre': x.genre, 'year':x.year})
-
-def Create_new_cast():
+    menu(check)
+def Create_new_cast(check):
     movie_id = input("Id filmu: ")
     person_id = input("Id osoby: ")
     if_actor = input("aktor wpisz 1, rezyser wpisz 0: ")
     x = Cast(None,movie_id,person_id,if_actor)   #tworzenie obiektu klasy movie
     c.execute("INSERT INTO cast VALUES(:cast_id,:movie_id,:person_id,:if_actor)" , {'cast_id': x.cast_id, 'movie_id': x.movie_id, 'person_id':x.person_id,
      'if_actor':x.if_actor})
-
-def Create_new_award():
+    menu(check)
+def Create_new_award(check):
     while True:
         try:
             award_name = input("Nazwa nagrody: ")
@@ -170,14 +180,15 @@ def Create_new_award():
         except sqlite3.IntegrityError:
             print ("Nie ma takiej osoby, sprobuj ponownie")
             Create_new_award()
-
-def Edit_movie():
+    menu(check)
+def Edit_movie(check):
     Id_filmu = input("Podaj Id_filmu: ")
     print ("""
     1. Edytuj gatunek
     2. Edytuj rok
     3. Edytuj tytul
     4. Usun film
+    5. Powrot do menu glownego
     """)
     ans=input("Co Chcesz zrobic")
     if ans=="1":
@@ -192,13 +203,19 @@ def Edit_movie():
         title = input("Podaj nowy tytul: ")
         c.execute("UPDATE movie SET Title =? WHERE movie_id=? ",(title,Id_filmu,))
         print("Zrobione")
+        menu(check)
     elif ans=="4":
         c.execute("DELETE FROM movie WHERE movie_id=? ",(Id_filmu))
+        print("Zrobione")
+        menu(check)
+    elif ans=="5":
+        os.system('cls')
+        menu(check)
     elif ans !="":
-        print("\n Not Valid Choice Try again")
+        print("\nBrak takiej opcji, powrot do menu glownego")
 
 def movie_sort():
-    c.execute("SELECT * FROM movie ORDER BY (SELECT AVG (rate) FROM rating GROUP BY movie_id)")
+    c.execute("SELECT movie.movie_id, movie.title, rating.rate FROM movie INNER JOIN rating ON movie.movie_id = rating.movie_id ORDER BY rating.rate")
     rows = c.fetchall()
     for row in rows:
         print(row)
@@ -213,7 +230,6 @@ def movie_rate(user):
     x = Rating(None,movie_idX,rate,user)   #tworzenie obiektu klasy rating
     c.execute("SELECT movie_id, userName FROM rating")
     for userName, movie_id in c:
-        print("Dupa")
         if(user == userName and movie_idX==movie_id):
             print("Film juz oceniony")
             inBase=True
@@ -292,8 +308,8 @@ def Create_new_person():
      x = Person(None,first_name,last_name,role) #tworzenie obiektu klasy movie
      c.execute("INSERT INTO person VALUES(:person_id,:first_name,:last_name,:role)" , {'person_id': x.person_id, 'first_name':x.first_name, 'last_name': x.last_name, 'role':x.role})
 
-
-menu()
+check=logIn()
+menu(check)
 conn.commit()
 
 conn.close()
