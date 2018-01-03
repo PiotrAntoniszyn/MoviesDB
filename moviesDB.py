@@ -10,48 +10,7 @@ conn = sqlite3.connect('movies.db')
 c = conn.cursor()
 c.execute("PRAGMA foreign_keys = 1")
 
-#Metoda odpowiedzialna za proces logowania
 
-# def save_obj(name, obj ):
-#     with open('obj/'+ name + '.pkl', 'wb+') as f:
-#         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
-#
-# def load_obj(name ):
-#     with open('obj/' + name + '.pkl', 'rb') as f:
-#         return pickle.load(f)
-#
-# def logOn():
-#     ifAdmin = input('Czy logowanie jako administrator? Y/N')
-#     #if (ifAdmin == 'y' or  ifAdmin == 'Y'):
-#
-#     userLogin = input('Podaj login: ')
-#     userPass = input('Podaj hasło: ')
-#     if (userLogin not in logData.keys() or userPass not in logData.values()):
-#         print('Błędny login lub hasło, spróbuj ponownie.')
-#         logOn()
-#     for key in logData:
-#         if (userLogin == key and userPass == logData[key]):
-#             print('Zalogowano. Witaj ' + str(userLogin))
-#
-#
-# #Tworzenie nowego użytkownika
-#
-# def createUser():
-#     userLogin = input('Podaj login: ')
-#     userPass = input('Podaj hasło: ')
-#     userRepeat = input('Powtórz hasło: ')
-#     if(userLogin in logData.keys()):
-#         print('Podany login jest już zajęty, podaj inny login')
-#         createUser()
-#     elif(userPass!=userRepeat):
-#         print('Podane hasła nie są identyczne, spróbuj ponownie')
-#         createUser()
-#     else:
-#         print('Pomyślnie utworzono konto! Witaj w klubie, '+ userLogin + '!')
-#         logData.update({userLogin:userPass})
-#         #
-#         #dodać część odpowiedzialną za aktualizację pliku z danymi użytkowników
-#         #
 def loginPrompt():
     userLogin = input('Podaj login: ')
     userPass = (input('Podaj haslo: '))
@@ -74,7 +33,8 @@ def logIn():
     if len(queryResult)==0:
         createUser(userCredentials[0],userCredentials[1])
         print("Utworzono konto")
-        logIn()
+        check = logIn()
+        menu(check)
 
 
     elif len(queryResult)==1:
@@ -133,7 +93,7 @@ def menu(check):
         2.Ocen film.
         3.Powrot do menu.
         """)
-        ans=input("Co chcesz zrobic")
+        ans=input("Co chcesz zrobic? ")
         if ans=="1":
             print("\n BAZA FILMOW")
             browseMovies(checkIfAdmin)
@@ -153,6 +113,7 @@ def userDelete(check):
     print("Usunieto")
     os.system('cls')
     menu(check)
+
 def Create_new_movie(check):
     title = input("Tytul: ")
     genre = input("Gatunek: ")
@@ -161,6 +122,7 @@ def Create_new_movie(check):
     c.execute("INSERT INTO movie VALUES(:movie_id,:title,:genre,:year)" , {'movie_id': x.movie_id, 'title':x.title,
     'genre': x.genre, 'year':x.year})
     menu(check)
+
 def Create_new_cast(check):
     movie_id = input("Id filmu: ")
     person_id = input("Id osoby: ")
@@ -169,6 +131,7 @@ def Create_new_cast(check):
     c.execute("INSERT INTO cast VALUES(:cast_id,:movie_id,:person_id,:if_actor)" , {'cast_id': x.cast_id, 'movie_id': x.movie_id, 'person_id':x.person_id,
      'if_actor':x.if_actor})
     menu(check)
+
 def Create_new_award(check):
     while True:
         try:
@@ -191,7 +154,7 @@ def Edit_movie(check):
     4. Usun film
     5. Powrot do menu glownego
     """)
-    ans=input("Co Chcesz zrobic")
+    ans=input("Co Chcesz zrobic? ")
     if ans=="1":
         genre = input("Podaj nowy gatunek: ")
         c.execute("UPDATE movie SET genre =? WHERE movie_id=? ",(genre,Id_filmu,))
@@ -230,6 +193,7 @@ def movie_sort(check):
     rows = c.fetchall()
     for row in rows:
         print(row)
+    menu(check)
 
 def movie_rate(user):
     movie_idX = input('Podaj ID filmu: ')
@@ -261,13 +225,13 @@ def browseMovies(check):
     5. Ranking wg ocen
     6. Powrot do menu
     """)
-    ans=input("Co chcesz zrobic")
+    ans=input("Co chcesz zrobic? ")
     if ans=="1":
         c.execute("SELECT * FROM movie")
         rows = c.fetchall()
         for row in rows:
             print(row)
-        #print("\n Student Added")
+        menu(check)
     elif ans=="2":
         print ("""
         1. Komedia
@@ -320,19 +284,21 @@ def browseMovies(check):
             print(row)
         menu(check)
     elif ans=="5":
-        movie_sort()
+        movie_sort(check)
     elif ans !="":
-        print("\n Not Valid Choice Try again")
+        print("\n Brak takiej opcji, powrot do menu")
+        menu(check)
+
 def Create_new_person(check):
-     first_name = input("First name: ")
-     last_name = input("Last name: ")
-     role = input("Role: ")
+     first_name = input("Imie: ")
+     last_name = input("Nazwisko: ")
+     role = input("Rola: ")
      x = Person(None,first_name,last_name,role) #tworzenie obiektu klasy movie
      c.execute("INSERT INTO person VALUES(:person_id,:first_name,:last_name,:role)" , {'person_id': x.person_id, 'first_name':x.first_name, 'last_name': x.last_name, 'role':x.role})
      menu(check)
 
 
-     
+
 check=logIn()
 menu(check)
 conn.commit()
