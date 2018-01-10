@@ -20,13 +20,14 @@ def logIn():
     sqlCreateTableQuery = 'CREATE TABLE IF NOT EXISTS Users (ID INTEGER PRIMARY KEY AUTOINCREMENT, Username TEXT, Password TEXT, IfAdmin BOOLEAN)'
     print("database created")
     c.execute(sqlCreateTableQuery)
-
+    conn.commit()
 
     userCredentials = loginPrompt()
 
     sqlFindUserQuery  ="SELECT Username,Password,IfAdmin from Users WHERE Username LIKE '{login}'".format(login = userCredentials[0])
 
     c.execute(sqlFindUserQuery)
+    conn.commit()
     queryResult = c.fetchall()
 
 
@@ -43,6 +44,7 @@ def logIn():
             #moze sie wydawac niepotrzebne, ale jesli tam nizej przy blednym loginie/hasle zmieni sie nie tylko haslo, ale tez login, to bez tego ni pojdzie (chyba xD)
             sqlFindUserQuery = "SELECT Username,Password,IfAdmin from Users WHERE Username LIKE '{login}'".format(login=userCredentials[0])
             c.execute(sqlFindUserQuery)
+            conn.commit()
 
             if userCredentials[1] == c.fetchone()[1]:
                 try:
@@ -62,10 +64,12 @@ def createUser(userLogin, userPassword):
         password=userPassword,
         admin=False)
     c.execute(sqlAddUserQuery)
+    conn.commit()
 
 def menu(check):
     checkIfAdmin = check
     c.execute("SELECT IfAdmin from Users WHERE Username LIKE '{login}'".format(login=checkIfAdmin))
+    conn.commit()
     d=c.fetchone()[0]
     if(d=='True'):
         print ("""Menu
@@ -110,6 +114,7 @@ def userDelete(check):
     user = input("podaj login uzytkownika do usuniecia: ")
     c.execute("DELETE FROM Users WHERE Username LIKE '{user}'".format(user=user))
     c.execute("DELETE FROM rating WHERE userName LIKE '{user}'".format(user=user))
+    conn.commit()
     print("Usunieto")
     os.system('cls')
     menu(check)
@@ -121,6 +126,7 @@ def Create_new_movie(check):
     x = Movie(None,title,genre,year)   #tworzenie obiektu klasy movie
     c.execute("INSERT INTO movie VALUES(:movie_id,:title,:genre,:year)" , {'movie_id': x.movie_id, 'title':x.title,
     'genre': x.genre, 'year':x.year})
+    conn.commit()
     menu(check)
 
 def Create_new_cast(check):
@@ -130,6 +136,7 @@ def Create_new_cast(check):
     x = Cast(None,movie_id,person_id,if_actor)   #tworzenie obiektu klasy movie
     c.execute("INSERT INTO cast VALUES(:cast_id,:movie_id,:person_id,:if_actor)" , {'cast_id': x.cast_id, 'movie_id': x.movie_id, 'person_id':x.person_id,
      'if_actor':x.if_actor})
+    conn.commit()
     menu(check)
 
 def Create_new_award(check):
@@ -140,6 +147,7 @@ def Create_new_award(check):
             person_id = input("Id osoby otrzymującej nagrode: ")
             x= Award(award_name,award_weight,person_id)
             c.execute("INSERT INTO award VALUES(:award_name,:award_weight,:person_id)" , {'award_name': x.award_name, 'award_weight': x.award_weight, 'person_id':x.person_id})
+            conn.commit()
             break
         except sqlite3.IntegrityError:
             print ("Nie ma takiej osoby, sprobuj ponownie")
@@ -158,6 +166,7 @@ def Edit_movie(check):
     if ans=="1":
         genre = input("Podaj nowy gatunek: ")
         c.execute("UPDATE movie SET genre =? WHERE movie_id=? ",(genre,Id_filmu,))
+        conn.commit()
         print("Zrobione")
         sleep(1)
         os.system('cls')
@@ -165,6 +174,7 @@ def Edit_movie(check):
     elif ans=="2":
         Year = input("Podaj nowy rok: ")
         c.execute("UPDATE movie SET Year =? WHERE movie_id=? ",(Year,Id_filmu,))
+        conn.commit()
         print("Zrobione")
         sleep(1)
         os.system('cls')
@@ -172,12 +182,14 @@ def Edit_movie(check):
     elif ans=="3":
         title = input("Podaj nowy tytul: ")
         c.execute("UPDATE movie SET Title =? WHERE movie_id=? ",(title,Id_filmu,))
+        conn.commit()
         print("Zrobione")
         sleep(1)
         os.system('cls')
         menu(check)
     elif ans=="4":
         c.execute("DELETE FROM movie WHERE movie_id=? ",(Id_filmu))
+        conn.commit()
         print("Zrobione")
         sleep(1)
         os.system('cls')
@@ -211,6 +223,7 @@ def movie_rate(user):
     if(inBase==False):
         c.execute("INSERT INTO rating VALUES(:rate_id,:movie_id,:rate,:userName)" , {'rate_id':x.rate_id,'movie_id': x.movie_id, 'rate':float(x.rate),
         'userName':x.userName})
+        conn.commit()
         print("Film Oceniony")
         sleep(1)
         os.system('cls')
